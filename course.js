@@ -1,61 +1,141 @@
-const express = require("express");
-const Course = require("../models/Course");
+const API = "http://localhost:5000/api";
 
-const router = express.Router();
+function logout() {
+  localStorage.clear();
+  window.location.href = "index.html";
+}
 
-// Get all courses
-router.get("/", async (req, res) => {
-  const courses = await Course.find().sort({ createdAt: -1 });
-  res.json(courses);
-});
+function goBack() {
+  window.location.href = "dashboard.html";
+}
 
-// Get single course
-router.get("/:id", async (req, res) => {
-  const course = await Course.findById(req.params.id);
-  if (!course) return res.status(404).json({ message: "Course not found" });
-  res.json(course);
-});
+function getToken() {
+  return localStorage.getItem("token");
+}
 
-// Seed demo course
-router.post("/seed/demo", async (req, res) => {
-  await Course.deleteMany();
+const courseId = localStorage.getItem("courseId");
 
-  const course = await Course.create({
-    title: "Full Stack Web Development",
-    description: "Learn HTML, CSS, JS, Node, MongoDB with videos + quizzes.",
-    thumbnail: "https://picsum.photos/600/400",
-    lessons: [
-      {
-        title: "Introduction to HTML",
-        videoUrl: "https://www.youtube.com/embed/pQN-pnXPaVg",
-        notes: "HTML is the structure of a website.",
-      },
-      {
-        title: "CSS Basics",
-        videoUrl: "https://www.youtube.com/embed/OEV8gMkCHXQ",
-        notes: "CSS makes your website beautiful.",
-      },
-      {
-        title: "JavaScript Basics",
-        videoUrl: "https://www.youtube.com/embed/W6NZfCO5SIk",
-        notes: "JavaScript adds logic & interactivity.",
-      },
-    ],
-    quizzes: [
-      {
-        question: "What does HTML stand for?",
-        options: ["Hyper Text Markup Language", "High Text Machine Language", "Hyper Transfer Markup Link"],
-        correctIndex: 0,
-      },
-      {
-        question: "CSS is used for?",
-        options: ["Logic", "Styling", "Database"],
-        correctIndex: 1,
-      },
-    ],
+async function fetchCourse() {
+  const res = await fetch(`${API}/courses/${courseId}`);
+  return await res.json();
+}
+
+async function fetchProgress() {
+  const res = await fetch(`${API}/progress/${courseId}`, {
+    headers: { Authorization: `Bearer ${getToken()}` },
+  });
+  return await res.json();
+}
+
+async function markLessonComplete(lessonIndex) {
+  await fetch(`${API}/progress/${courseId}/lesson`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getToken()}`,
+    },
+    body: JSON.stringify({ lessonIndex }),
+  });
+}
+
+async function saveQuizScore(score) {
+  await fetch(`${API}/progress/${courseId}/quiz`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getToken()}`,
+    },
+    body: JSON.stringify({ quizScore: score }),
+  });
+}
+
+function updateProgressUI(course, progress) {
+  const totalLessons = course.lessons.length;
+  const completed = progress.completedLessons.length;
+
+  const percent = totalLessons === 0 ? 0 : Math.round((completed / totalLessons) * 100);
+
+  document.getElementById("progressFill").style.width = percent + "%";
+  document.getElementById("progressText").innerText = percent + "% Completed";
+}
+
+async function renderCourse() {
+  if (!getToken()) return (window.location.href = "index.html");
+
+  const course = await fetchCourse();
+  let progress = await fetchProgress();
+
+  document.getElementById("courseTitle").innerText = course.title;
+
+  const lessonList = document.getElementById("lessonList");
+  lessonList.innerHTML = "";
+
+  course.lessons.forEach((lesson, index) => {
+    const btn = document.createElement("button");
+    btn.className = "lessonBtn";
+
+    if (progress.completedLessons.includes(index)) {
+      btn.classList.add("completed");
+      btn.innerText = "✅ " + lesson.title;
+    } else {
+      btn.innerText = "▶ " + lesson.title;
+    }
+
+    btn.onclick = async () => {
+      document.getElementById("videoFrame").src = lesson.videoUrl;
+      document.getElementById("notesText").innerText = lesson.notes;
+
+      await markLessonComplete(index);
+      progress = await fetchProgress();
+      renderCourse();
+    };
+
+    lessonList.appendChild(btn);
   });
 
-  res.json({ message: "Demo course created", course });
-});
+  // Default first lesson
+  if (course.lessons.length > 0) {
+    document.getElementById("videoFrame").src = course.lessons[0].videoUrl;
+    document.getElementById("notesText").innerText = course.lessons[0].notes;
+  }
 
-module.exports = router;
+  // Quiz
+  const quizBox = document.getElementById("quizBox");
+  quizBox.innerHTML = "";
+
+  let score = 0;
+
+  course.quizzes.forEach((q, qi) => {
+    const qDiv = document.createElement("div");
+    qDiv.style.marginBottom = "14px";
+    qDiv.innerHTML = `<p style="font-weight:bold;">${qi + 1}. ${q.question}</p>`;
+
+    q.options.forEach((opt, oi) => {
+      const optBtn = document.createElement("button");
+      optBtn.className = "lessonBtn";
+      optBtn.innerText = opt;
+
+      optBtn.onclick = () => {
+        if (oi === q.correctIndex) score++;
+        optBtn.style.background = "#2ecc71";
+        optBtn.disabled = true;
+      };
+
+      qDiv.appendChild(optBtn);
+    });
+
+    quizBox.appendChild(qDiv);
+  });
+
+  const submitBtn = document.createElement("button");
+  submitBtn.innerText = "Submit Quiz";
+  submitBtn.onclick = async () => {
+    alert(`Your Score: ${score}/${course.quizzes.length}`);
+    await saveQuizScore(score);
+  };
+  quizBox.appendChild(submitBtn);
+
+  updateProgressUI(course, progress);
+}
+
+renderCourse();

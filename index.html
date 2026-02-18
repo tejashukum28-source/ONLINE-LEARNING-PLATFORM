@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Online Learning Platform</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+  <div class="topbar">
+    <h2>📚 LearnFlow</h2>
+    <p>Learn with videos, quizzes & track progress</p>
+  </div>
+
+  <div class="container auth-container">
+    <div class="card">
+      <h3>Login</h3>
+      <input id="loginEmail" type="email" placeholder="Email"/>
+      <input id="loginPassword" type="password" placeholder="Password"/>
+      <button onclick="login()">Login</button>
+    </div>
+
+    <div class="card">
+      <h3>Register</h3>
+      <input id="regName" type="text" placeholder="Full Name"/>
+      <input id="regEmail" type="email" placeholder="Email"/>
+      <input id="regPassword" type="password" placeholder="Password"/>
+      <button onclick="register()">Create Account</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

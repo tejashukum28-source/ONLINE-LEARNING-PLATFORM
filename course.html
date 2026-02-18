@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Course</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+  <div class="nav">
+    <button class="backBtn" onclick="goBack()">⬅ Back</button>
+    <h2 id="courseTitle">Course</h2>
+    <button class="logout" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="container course-layout">
+    <div class="left">
+      <h3>🎥 Lessons</h3>
+      <div id="lessonList"></div>
+
+      <h3 style="margin-top:20px;">📝 Quiz</h3>
+      <div id="quizBox"></div>
+    </div>
+
+    <div class="right">
+      <h3>📺 Video Player</h3>
+      <div class="videoBox">
+        <iframe id="videoFrame" src="" frameborder="0" allowfullscreen></iframe>
+      </div>
+
+      <h3>📌 Notes</h3>
+      <p id="notesText" class="notes"></p>
+
+      <h3>📊 Progress</h3>
+      <div class="progressBox">
+        <div class="progressBar">
+          <div id="progressFill"></div>
+        </div>
+        <p id="progressText">0%</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="course.js"></script>
+</body>
+</html>

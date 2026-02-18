@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+  <div class="nav">
+    <h2>📚 LearnFlow Dashboard</h2>
+    <button class="logout" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="container">
+    <h3 class="section-title">Available Courses</h3>
+    <div id="courseList" class="grid"></div>
+
+    <div class="seedBox">
+      <button onclick="seedDemo()">➕ Add Demo Course</button>
+      <p>(For testing - creates 1 demo course)</p>
+    </div>
+  </div>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>
